@@ -30,7 +30,7 @@ function check_and_serve_cached_page() {
   $status_code = http_response_code();
 	/* TO DO: remove certain parameters, like [&]?XDEBUG_PROFILE[^&]* */
 	error_log("KTWP check_and_serve_cached_page");
-    if (!is_admin() && $status_code !== 404) {
+    if (!is_admin() && $status_code == 200) {
         // Log the attempt
         error_log("KTWP Cache Check: Attempting for URL: " . $_SERVER['REQUEST_URI']);
 
@@ -74,7 +74,7 @@ $data = getFunctionTransient("ktwpFrontPageCacheEntry",  $link ,true); if ( $dat
 */
 function intercept_front_page_output($buffer) {
 	  $status_code = http_response_code();
-    if (!is_admin() && $status_code!== 404 /* was is_front_page() to just cache front page */) {
+    if (!is_admin() && $status_code== 200 /* was is_front_page() to just cache front page */) {
         // Store the buffer in a variable
        
         
