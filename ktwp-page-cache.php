@@ -27,6 +27,7 @@ function get_current_user_role() {
 
 
 function check_and_serve_cached_page() {
+
 	/* TO DO: remove certain parameters, like [&]?XDEBUG_PROFILE[^&]* */
 	error_log("KTWP check_and_serve_cached_page");
     if (!is_admin()) {
@@ -41,10 +42,10 @@ function check_and_serve_cached_page() {
         // What does the 'true' parameter do? Assuming it's required by your function.
         $data = getFunctionTransient("ktwpFrontPageCacheEntry", $link, true);
 
-        if ($data !== null) {
+        if ($data !== null && $data !== '') {
             // Cache HIT! Log this specifically.
-            error_log("KTWP Cache Check: HIT! Key: " . $cache_key_debug . ". Exiting now.");
-            echo preg_replace('/(<html)([ >])/i','\1 ktwppagecachetype="cached"\2',$data,1);
+            error_log("KTWP Cache Check: HIT! Key: " . $cache_key_debug . ", Outputting cache: " . substr($data,0,50) . ". Exiting now.");
+            echo preg_replace('/(<html)([ >])/i','\1 ktwppagecachetype="cached" ktwpcurrenttemplate="'.get_page_template().'"\2',$data,1);
             exit; // Make absolutely sure this is here and reachable
         } else {
             // Cache MISS! Log this.
@@ -97,11 +98,11 @@ $non_logged_in_buffer = wp_remote_retrieve_body($response);
             
             // Restore the original user
             wp_set_current_user($current_user->ID);
-            
+            if ($non_logged_in_buffer !== null && $non_logged_in_buffer !== '') { //don't cache if result not returned properly
             // Cache the non-logged-in version
             setFunctionTransient("ktwpFrontPageCacheEntry", $non_logged_in_buffer, $loggedOutLink, true);
 		
-		
+			}
 		
 		
 		
