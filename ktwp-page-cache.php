@@ -116,7 +116,7 @@ $non_logged_in_buffer = wp_remote_retrieve_body($response);
 	}
            /* was  return preg_replace('/(<html)([ >])/i','\1 ktwppagecachetype="live"\2',$buffer,1); */
 
-   return preg_replace('/(<head[ >]*)/i','\1<meta name="ktwppagecacheinfo" content="live"/>',$buffer,1);
+   return preg_replace('/(<head[ >]*)/i','\1<meta name="ktwppagecacheinfo" content="live; at '.date('m/d/Y h:i:s a', time()).'"/>',$buffer,1);
 	
 		
 	
