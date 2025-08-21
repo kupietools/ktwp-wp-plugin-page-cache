@@ -43,16 +43,20 @@ function check_and_serve_cached_page() {
         $data = getFunctionTransient("ktwpFrontPageCacheEntry", $link);
 $frontpageinsert = is_front_page()?getFunctionTransient("headerInsert","frontpage"):""; /* allow inserting dynamic data into pages refturned from cache—in this case, preload images for hero */
         if ($data !== null && $data !== '') {
+		
+    header("X-ktwp-page-cache: cache-hit");
             // Cache HIT! Log this specifically.
             //error_log("KTWP Cache Check: HIT!  Key: " . $cache_key_debug . ", Outputting cache: " . substr($data,0,50) . ". Exiting now.");
 			/* was     echo preg_replace('/(<html)([ >])/i','\1 ktwppagecachetype="cached" ktwpcurrenttemplate="'.get_page_template().'"\2',$data,1); */
             echo preg_replace('/(<head[ >]*)/i','\1<meta name="ktwppagecacheinfo" content="cached; at '.date('m/d/Y h:i:s a', time()).'"/>'.$frontpageinsert,$data,1);
             exit; // Make absolutely sure this is here and reachable
         } else {
+			    header("X-ktwp-page-cache: cache-miss");
             // Cache MISS! Log this.
             //error_log("KTWP Cache Check: MISS. Key: " . $cache_key_debug . ". Continuing WP execution.");
         }
     } else {
+		    header("X-ktwp-page-cache: cache-skipped");
          //error_log("KTWP Cache Check: Admin request or 404, skipping cache check.");
     }
 }
@@ -132,10 +136,36 @@ function start_output_buffer() {
     }
 }
 
-	
+
+
+
+$dontCacheIP= array('1.40.24.243','52.22.66.203'); //IPs never to serve cached version to
+
+function ktwp_pc_getClientIp() {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+        return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ips[0]);
+    }
+    if (!empty($_SERVER['HTTP_X_REAL_IP'])) {
+        return $_SERVER['HTTP_X_REAL_IP'];
+    }
+    if (!empty($_SERVER['HTTP_X_CLIENT_IP'])) {
+        return $_SERVER['HTTP_X_CLIENT_IP'];
+    }
+    return $_SERVER['REMOTE_ADDR'] ?? '';
+}
+
+$remoteIP = ktwp_pc_getClientIp();				
+ if (  !in_array($remoteIP,$dontCacheIP) )
+{
+  
 	//error_log("KTWP Cache Check: starting plugin");
 // This hook runs very early, before WordPress starts building the page
 add_action('template_redirect', 'check_and_serve_cached_page', 1);
 	//error_log("KTWP Cache Check: starting second action");
 // This only runs if check_and_serve_cached_page() didn't find cached content
 add_action('template_redirect', 'start_output_buffer', 2);
+}
