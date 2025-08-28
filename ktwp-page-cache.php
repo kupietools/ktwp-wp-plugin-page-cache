@@ -7,6 +7,76 @@ Author: Michael Kupietz
 Note: Requires an object cache to be installed and my KTWP Caching Toolkit plugin. Also, for the moment, this is experimental, and may be funky. It works for me. 
 */
 
+
+/* * * * * * SECTION 1: add section for this plugin to KupieTools admin area menu, if desired, otherwise remove this section * * * * * */
+
+add_action('admin_menu', function () {
+    global $menu;
+    $exists = false;
+    
+    if ($menu) {
+        foreach($menu as $item) {
+            if (isset($item[0]) && $item[0] === 'KupieTools') {
+                $exists = true;
+                break;
+            }
+        }
+    }
+    
+    if (!$exists) {
+        add_menu_page(
+            'KupieTools Settings',
+            'KupieTools',
+            'manage_options',
+            'kupietools',
+            function() {
+                echo '<div class="wrap"><h1>KupieTools</h1>';
+                do_action('kupietools_sections');
+                echo '</div>';
+            },
+            'dashicons-admin-tools'
+        );
+    }
+});
+
+// Register settings
+    add_action('admin_init', function() {
+        register_setting('ktwp_pagecache_options', 'ktwp_pagecache_text_area_1');
+    });
+    
+// Add THIS plugin's section
+    add_action('kupietools_sections', function() {
+        ?>
+        <details class="card ktwp-settings-card ktwp_pagecache-settings-card" style="max-width: 800px; padding: 20px; margin-top: 20px;" open="true"><!-- settings section added by <?php echo(__FILE__); ?> -->
+            <summary style="font-weight:bold;">KupieTools Page Cache</summary>
+            <!-- SETTINGS SECTION DESCRIPTION OR INSTRUCTIONS GO HERE -->
+            <form method="post" action="options.php">
+                <?php
+                settings_fields('ktwp_pagecache_options');
+                ?>
+                <div>
+                    <p>
+                        <label>
+							<strong>Don't cache pages for users coming from these IP addreses (1 per line):</strong><br>
+							<textarea rows="4" name="ktwp_pagecache_text_area_1" style="width: 100%; margin-top: 10px;"><?php echo esc_attr(get_option('ktwp_pagecache_text_area_1', "")); ?></textarea> 
+                           
+                        </label>
+                    </p>
+                  
+                </div>
+                <?php submit_button('Save Settings'); ?>
+            </form>
+        </details>
+        <?php
+    });
+//}); 
+
+$dontCacheIPs = get_option('ktwp_pagecache_text_area_1',""); 
+$dontCacheIPsArray = array_values(array_filter(array_map('trim', preg_split('/\r\n|\r|\n/', $dontCacheIPs))));
+ /* * * * * END SECTION 1: End Kupietools menu entry * * * * */
+
+
+
 $frontOnly=false;
 
 function get_current_user_role() {
@@ -140,7 +210,7 @@ function start_output_buffer() {
 
 
 
-$dontCacheIP= array('1.40.24.243','52.22.66.203'); //IPs never to serve cached version to
+$dontCacheIP= $dontCacheIPsArray; //was array('1.40.24.243','52.22.66.203'); //IPs never to serve cached version to
 
 function ktwp_pc_getClientIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
