@@ -29,6 +29,7 @@ function get_current_user_role() {
 function check_and_serve_cached_page() {
 	global $frontOnly;
   $status_code = http_response_code();
+	header("X-Cache-Enabled: true"); /* hopefully this will shut the wordpress health plugin up */
 	/* TO DO: remove certain parameters, like [&]?XDEBUG_PROFILE[^&]* */
 	//error_log("KTWP check_and_serve_cached_page");
     if ((is_front_page() || !$frontOnly) && !is_admin() && $status_code == 200) {
