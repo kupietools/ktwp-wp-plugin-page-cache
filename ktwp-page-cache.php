@@ -78,7 +78,7 @@ $dontCacheIPsArray = array_values(array_filter(array_map('trim', preg_split('/\r
 
 
 $frontOnly=false;
-
+$thisFuncID="";
 function get_current_user_role() {
 	
  if( is_user_logged_in() ) { // check if there is a logged in user 
@@ -98,6 +98,8 @@ function get_current_user_role() {
 
 function check_and_serve_cached_page() {
 	global $frontOnly;
+	global $thisFuncID;
+	$thisFuncID = "pagecache_".uniqid();
   $status_code = http_response_code();
 	header("X-Cache-Enabled: true"); /* hopefully this will shut the wordpress health plugin up */
 	/* TO DO: remove certain parameters, like [&]?XDEBUG_PROFILE[^&]* */
@@ -111,7 +113,7 @@ function check_and_serve_cached_page() {
         $cache_key_debug = implode('|', $link); // Use a consistent separator for logging
         //error_log("KTWP Cache Check: Generated Key: " . $cache_key_debug);
 
-        $data = getFunctionTransient("ktwpFrontPageCacheEntry", $link);
+        $data = getFunctionTransient("ktwpFrontPageCacheEntry", $link, false, $thisFuncID);
 $frontpageinsert = is_front_page()?getFunctionTransient("headerInsert","frontpage"):""; /* allow inserting dynamic data into pages refturned from cache—in this case, preload images for hero */
         if ($data !== null && $data !== '') {
 		
@@ -151,6 +153,7 @@ $data = getFunctionTransient("ktwpFrontPageCacheEntry",  $link ,true); if ( $dat
 */
 function intercept_front_page_output($buffer) {
 	global $frontOnly;
+	global $thisFuncID;
 	  $status_code = http_response_code();
     if ((is_front_page() || !$frontOnly) && !is_admin() && $status_code== 200 /* was is_front_page() to just cache front page */) {
         // Store the buffer in a variable
@@ -162,7 +165,7 @@ function intercept_front_page_output($buffer) {
       $link =   get_current_user_role() ;
 		$thisUrl=$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ."?".$_SERVER['QUERY_STRING'];
      $link []= $thisUrl;
-setFunctionTransient("ktwpFrontPageCacheEntry", $buffer, $link /* no idea what this was for. Mistake?, true */);
+setFunctionTransient("ktwpFrontPageCacheEntry", $buffer, $link /* no idea what this was for. Mistake?, true */, $thisFuncID);
     if ($link[0] != "notLoggedIn") { /* If we get here and the user is logged in, and the logged out version of page isn't cached, let's take a moment to generate and cache the logged out version too, instead of waiting for a logged-out user to load it. */
 		$loggedOutLink = array("notLoggedIn",$link[1]);
 		  if (getFunctionTransient("ktwpFrontPageCacheEntry", $loggedOutLink, true) === null) {
@@ -179,7 +182,7 @@ $non_logged_in_buffer = wp_remote_retrieve_body($response);
             wp_set_current_user($current_user->ID);
             if ($non_logged_in_buffer !== null && $non_logged_in_buffer !== '') { //don't cache if result not returned properly
             // Cache the non-logged-in version
-            setFunctionTransient("ktwpFrontPageCacheEntry", $non_logged_in_buffer, $loggedOutLink/* no idea what this was for. Mistake?, true */ );
+            setFunctionTransient("ktwpFrontPageCacheEntry", $non_logged_in_buffer, $loggedOutLink/* no idea what this was for. Mistake?, true */, $thisFuncID );
 		
 			}
 		
