@@ -108,7 +108,7 @@ function check_and_serve_cached_page() {
         // Log the attempt
         //error_log("KTWP Cache Check: Attempting for URL: " . $_SERVER['REQUEST_URI']);
 
-        $link = get_current_user_role();
+        $link = [get_current_user_role()];
         $link[] = $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] . "?" . $_SERVER['QUERY_STRING'];
         $cache_key_debug = implode('|', $link); // Use a consistent separator for logging
         //error_log("KTWP Cache Check: Generated Key: " . $cache_key_debug);
@@ -162,7 +162,7 @@ function intercept_front_page_output($buffer) {
         // Here you could store $captured_output in your cache system
         // Example pseudocode:
         // your_cache_system_store($captured_output);
-      $link =   get_current_user_role() ;
+      $link =   [get_current_user_role()] ;
 		$thisUrl=$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ."?".$_SERVER['QUERY_STRING'];
      $link []= $thisUrl;
 setFunctionTransient("ktwpFrontPageCacheEntry", $buffer, $link /* no idea what this was for. Mistake?, true */, $thisFuncID);
