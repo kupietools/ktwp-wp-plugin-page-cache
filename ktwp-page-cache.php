@@ -162,7 +162,7 @@ function intercept_front_page_output($buffer) {
       $link =   get_current_user_role() ;
 		$thisUrl=$_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'] ."?".$_SERVER['QUERY_STRING'];
      $link []= $thisUrl;
-setFunctionTransient("ktwpFrontPageCacheEntry", $buffer, $link ,true);
+setFunctionTransient("ktwpFrontPageCacheEntry", $buffer, $link /* no idea what this was for. Mistake?, true */);
     if ($link[0] != "notLoggedIn") { /* If we get here and the user is logged in, and the logged out version of page isn't cached, let's take a moment to generate and cache the logged out version too, instead of waiting for a logged-out user to load it. */
 		$loggedOutLink = array("notLoggedIn",$link[1]);
 		  if (getFunctionTransient("ktwpFrontPageCacheEntry", $loggedOutLink, true) === null) {
@@ -179,7 +179,7 @@ $non_logged_in_buffer = wp_remote_retrieve_body($response);
             wp_set_current_user($current_user->ID);
             if ($non_logged_in_buffer !== null && $non_logged_in_buffer !== '') { //don't cache if result not returned properly
             // Cache the non-logged-in version
-            setFunctionTransient("ktwpFrontPageCacheEntry", $non_logged_in_buffer, $loggedOutLink, true);
+            setFunctionTransient("ktwpFrontPageCacheEntry", $non_logged_in_buffer, $loggedOutLink/* no idea what this was for. Mistake?, true */ );
 		
 			}
 		
