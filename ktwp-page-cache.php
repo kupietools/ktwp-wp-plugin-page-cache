@@ -210,7 +210,7 @@ function start_output_buffer() {
 
 
 
-$dontCacheIP= $dontCacheIPsArray; //was array('1.40.24.243','52.22.66.203'); //IPs never to serve cached version to
+$dontCacheIP= $dontCacheIPsArray; //was array('1.40.24.243','52.22.66.203'); //IPs never to serve cached version to.
 
 function ktwp_pc_getClientIp() {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP'])) {
